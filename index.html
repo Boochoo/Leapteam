@@ -1,0 +1,223 @@
+<!--
+The MIT License (MIT)
+Copyright (c) 2014 Leap Motion Inc
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+//-->
+
+<html>
+<head>
+    <title>Grab Strength Demo</title>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r67/three.js"></script>
+    <script src="http://js.leapmotion.com/leap-0.6.2.min.js"></script>
+    <script src="http://js.leapmotion.com/leap-plugins-0.1.6.1.js"></script>
+    <script src="http://js.leapmotion.com/leap.rigged-hand-0.1.4.min.js"></script>
+
+
+    <style class="codepen">
+        body{
+            font-family: 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
+            overflow: hidden;
+        }
+        #output{
+            font-size: 66px;
+            color: #005d98;
+            text-align: left;
+            position: fixed;
+            bottom: 18px;
+        }
+
+        #progress {
+            background: #005d98;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            height: 16px;
+            width: 0%;
+        }
+        img#connect-leap{
+            /* this can be removed with leapjs-plugins 0.1.4.1 */
+            max-width: 100%;
+        }
+        #cursor{
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: crimson;
+        }
+    </style>
+
+</head>
+
+<body>
+<div id=output></div>
+<div id=progress></div>
+<div id="cursor"></div>
+</body>
+
+<script type="text/javascript">
+    /********************************************************
+     * This is the actual example part where we call grabStrength
+     *****************************************************/
+    var output = document.getElementById('output'),
+            progress = document.getElementById('progress'),
+            cursor = document.getElementById('cursor');
+
+    // Set up the controller:
+    //    Leap.loop({background: true}, {
+    //
+    //        hand: function(hand){
+    //
+    //                  output.innerHTML = hand.grabStrength.toPrecision(2);
+    //                  progress.style.width = hand.grabStrength * 100 + '%';
+    //
+    //              }
+    //    });
+    var controller = new Leap.Controller({
+        enableGestures: true,
+        frameEventName: 'animationFrame'
+    })
+            .use('screenPosition', {scale: 1});
+
+    var screenWidth = window.innerWidth;
+    var screenHeight = window.innerHeight;
+    controller.setBackground(true);
+
+    controller.on('frame', function(frame) {
+        if(frame.hands.length > 0) {
+            var hand = frame.hands[0];
+            //output.innerHTML = hand.grabStrength.toPrecision(2);
+            //progress.style.width = hand.grabStrength * 100 + '%';
+            //var handStatus = handStateFromHistory(hand, 10);
+            var handMesh = frame.hands[0].data('riggedHand.mesh');
+            var screenPosition = handMesh.screenPosition(
+                    hand.stabilizedPalmPosition
+            );
+            cursor.style.left = screenPosition.x;
+            cursor.style.bottom = screenPosition.y;
+
+            //var stabilized = hand.stabilizedPalmPosition;
+            //output.innerHTML = stabilized;
+            output.innerHTML = screenPosition.x.toFixed(2) + ' | ' + screenPosition.y.toFixed(2);
+            //var screenPosition = hand.screenPosition();
+
+            //cursor.style.left = screenPosition[0];
+            //cursor.style.top = screenPosition[1] + screenHeight*2;
+            //output.innerHTML = screenPosition[0].toFixed(2) + ' | ' + screenPosition[1].toFixed(2);
+            //output.innerHTML = hand.palmPosition[0].toFixed(2) + ' - ' + hand.palmPosition[1].toFixed(2);
+        }
+
+//        if(frame.valid && frame.gestures.length > 0){
+//            frame.gestures.forEach(function(gesture) {
+//                switch (gesture.type) {
+//                    case "circle":
+//                        output.innerHTML = "Circle Gesture";
+//                        break;
+//                    case "keyTap":
+//                        output.innerHTML = "Key Tap Gesture";
+//                        break;
+//                    case "screenTap":
+//                        output.innerHTML = "Screen Tap Gesture";
+//                        break;
+//                    case "swipe":
+//                        output.innerHTML = "Swipe Gesture";
+//                        break;
+//                }
+//            });
+//        }
+
+
+
+    });
+
+    controller.connect();
+
+
+    controller.use('playback', {
+        // This is a compressed JSON file of preprecorded frame data
+        recording: 'grab-bones-7-54fps.json.lz',
+        // How long, in ms, between repeating the recording.
+        timeBetweenLoops: 1000,
+        pauseOnHand: true
+    }).on('riggedHand.meshAdded', function(handMesh, leapHand){
+        handMesh.material.opacity = 0.3;
+    });
+
+
+
+    controller.use('riggedHand', {
+        scale: 1,
+        positionScale: 4,
+        offset: new THREE.Vector3(0,-12,-5),
+        boneColors: function (boneMesh, leapHand){
+            if ((boneMesh.name.indexOf('Finger_') == 0) ) {
+                return {
+                    hue: 0.6,
+                    saturation: leapHand.grabStrength,
+                    lightness: 0.5
+                }
+            }
+        }
+    });
+
+
+
+
+
+
+
+    function handStateFromHistory(hand, historySamples) {
+        if(hand.grabStrength == 1) return "closed";
+        else if (hand.grabStrength == 0) return "open";
+        else {
+            var sum = 0
+            for(var s = 0; s < historySamples; s++){
+                var oldHand = controller.frame(s).hand(hand.id)
+                if(!oldHand.valid) break;
+                sum += oldHand.grabStrength
+            }
+            var avg = sum/s;
+            if(hand.grabStrength - avg < 0) return "open";
+            else if (hand.grabStrength > 0) return "closed";
+        }
+        return"not detected";
+    }
+
+    //    var camera = controller.plugins.riggedHand.camera;
+    //    camera.position.set(0,20,50);
+    //    camera.lookAt(new THREE.Vector3(0,-20,-10));
+
+
+
+
+
+
+
+
+    /*********************************************************
+     * End of the actual example
+     ****************************************************/
+
+
+    /*********************************************************
+     * The rest of the code is here for visualizing the example. Feel
+     * free to remove it to experiment with the API value only
+     ****************************************************/
+
+</script>
+</html>
