@@ -5,15 +5,18 @@ var mouseY = 0;
 var mouseZ = 0;
 var addX = 0;
 var isSwipeLeft = false;
+var results = [];
 
 $(document).ready( init );
 
 function init() {
     w = $(window);
+    var screenWidth = window.innerWidth;
+    var screenHeight = window.innerHeight;
     container = $( '#contentContainer' );
     carousel = $( '#carouselContainer' );
-    item = $( '.carouselItem' );
-    itemLength = $( '.carouselItem' ).length;
+    item = $('.carouselItem');
+    itemLength = $('.carouselItem').length;
     option = $(".option");
     optionLength = $( '.option' ).length;
 
@@ -24,37 +27,46 @@ function init() {
     TweenMax.set(container, {perspective:1000});
     TweenMax.set(carousel, { z:-(radius)});
 
-    // create carousel item props
+    generateElement();
 
-    for ( var i = 0; i < itemLength; i++ ) {
-        var $item = item.eq(i);
-        var $block = $item.find('.carouselItemInner');
-
-        //thanks @chrisgannon!
-        TweenMax.set($item, {rotationY:angle * i, z:radius, transformOrigin:"50% 50% " + -radius + "px"});
-
-        animateIn( $item, $block );
-    }
-
-    for (var j=0; j < optionLength; j++) {
-        var parentOffset = $('.optionContainer').offset();
-        var $option = option.eq(j);
-        var optionRad = 300;
-
-        var optionTop = parentOffset.top/2 - optionRad * Math.sin(j*2*Math.PI/optionLength) + 100;
-        var optionLeft = parentOffset.left/2 - (optionRad+200) * Math.cos(j*2*Math.PI/optionLength) - $option.outerWidth()/2 + 200;
-        console.log(parentOffset.top, parentOffset.left);
-        $option.css({top: optionTop,left:optionLeft});
-    }
 
     // set mouse x and y props and looper ticker
-    window.addEventListener( "mousemove", onMouseMove, false );
+    //window.addEventListener( "mousemove", onMouseMove, false );
     ticker = setInterval( looper, 1000/60 );
     window.addEventListener("click", function() {
         looper();
     });
 }
 
+
+function generateElement(){
+    // positioning questions
+
+    for ( var i = 0; i < itemLength; i++ ) {
+        var $item = item.eq(i);
+        var $block = $item.find('.carouselItemInner');
+        //thanks @chrisgannon!
+        TweenMax.set($item, {rotationY:angle * i, z:radius, transformOrigin:"50% 50% " + -radius + "px"});
+
+        animateIn( $item, $block );
+    }
+
+    //positioning answers
+
+    for (var j=0; j < optionLength; j++) {
+        var parentOffset = $('.optionContainer').offset();
+        var $option = option.eq(j);
+        var optionRad = 300;
+
+        var optionTop = parentOffset.top/2 - optionRad * Math.sin(j*2*Math.PI/optionLength) + 50; // 100
+        var optionLeft = parentOffset.left/2 - (optionRad+200) * Math.cos(j*2*Math.PI/optionLength) - $option.outerWidth()/2 + 100; // 200
+        console.log(parentOffset.top, parentOffset.left);
+        $option.css({top: optionTop,left:optionLeft});
+    }
+}
+
+
+/* Animation for Question */
 function animateIn( $item, $block ) {
     var $nrX = 360 * getRandomInt(2);
     var $nrY = 360 * getRandomInt(2);
@@ -121,13 +133,6 @@ function onSwipeV(pos) {
     mouseY = (10 - pos*0.05);
 }
 
-function onZoom(pos) {
-    if(pos > 5 && pos < 100) {
-        mouseZ =  -(1000 + pos*0.5);
-    } else {
-        mouseZ = -1020;
-    }
-}
 function onStop(){
     mouseX = 0;
     mouseY = 0;
@@ -155,18 +160,22 @@ function collision(){
 
 function dropItem() {
     var selectedOpt = $('.option.selected');
+    var questionId = $('.active').data('id');
+    var answerId = selectedOpt.data('id');
+    //results[questionId] = answerId;
+    //console.log(results);
 
     if( selectedOpt.length != 0) {
         $('.active').addClass('done').removeClass('active');
         selectedOpt.removeClass('selected');
         setTimeout(function(){ addX += -angle;}, 300);
-
     }
 }
 
 
+
 /********************************************************
- * This is the actual example part where we call grabStrength
+ * This is the actual leap motion part
  *****************************************************/
 var output = document.getElementById('output'),
     progress = document.getElementById('progress');
@@ -179,8 +188,7 @@ var controller = new Leap.Controller({
     frameEventName: 'animationFrame'
 }).use('screenPosition', {scale: 1});
 
-var screenWidth = window.innerWidth;
-var screenHeight = window.innerHeight;
+
 controller.setBackground(true);
 
 controller.on('frame', function(frame) {
@@ -262,6 +270,7 @@ function grabItem(hand) {
     }
     else {
         isGrab = false;
+
         $('.clone-item').remove();
         dropItem();
         $('.optionContainer').css({opacity: 0, zIndex: -1});

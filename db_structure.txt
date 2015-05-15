@@ -1,0 +1,18 @@
+table Questions
+qId : int,primary key, question id, auto increment
+qNumber: int
+qContent:  text
+
+
+table Answers
+aId: int, primary key, auto increment
+qId: question id foreign key
+aNumber: int
+aContent: text
+
+table Users
+
+uId:  int, primary key, auto increment
+qId: question id foreign key
+aId: answer id foreign key
+date: time format, date created
