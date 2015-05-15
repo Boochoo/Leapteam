@@ -1,44 +1,287 @@
+// set and cache variables
+var w, container, carousel, item, radius, itemLength, angle, ticker, option, optionLength;
+var mouseX = 0;
+var mouseY = 0;
+var mouseZ = 0;
+var addX = 0;
+var isSwipeLeft = false;
 
-var cats = {};
+$(document).ready( init );
 
-Leap.loop(function(frame) {
+function init() {
+    w = $(window);
+    container = $( '#contentContainer' );
+    carousel = $( '#carouselContainer' );
+    item = $( '.carouselItem' );
+    itemLength = $( '.carouselItem' ).length;
+    option = $(".option");
+    optionLength = $( '.option' ).length;
 
-    frame.hands.forEach(function(hand, index) {
+    angle = 360 / itemLength;
 
-        var cat = ( cats[index] || (cats[index] = new Cat()) );
-        cat.setTransform(hand.screenPosition(), hand.roll());
+    radius = Math.round( (400) / Math.tan( Math.PI / itemLength ) );
+    // set container 3d props
+    TweenMax.set(container, {perspective:1000});
+    TweenMax.set(carousel, { z:-(radius)});
 
-    });
+    // create carousel item props
 
-}).use('screenPosition', {scale: 1});
+    for ( var i = 0; i < itemLength; i++ ) {
+        var $item = item.eq(i);
+        var $block = $item.find('.carouselItemInner');
 
+        //thanks @chrisgannon!
+        TweenMax.set($item, {rotationY:angle * i, z:radius, transformOrigin:"50% 50% " + -radius + "px"});
 
-var Cat = function() {
-    var cat = this;
-    var img = document.createElement('img');
-    img.src = 'https://s3-us-west-2.amazonaws.com/s.cdpn.io/109794/cat_2.png';
-    img.style.position = 'absolute';
-    img.onload = function () {
-        cat.setTransform([window.innerWidth/2,window.innerHeight/2], 0);
-        document.body.appendChild(img);
+        animateIn( $item, $block );
     }
 
-    cat.setTransform = function(position, rotation) {
-        document.getElementById('posX').innerText = position[0];
-        document.getElementById('posY').innerText = position[1];
-        img.style.left = position[0] - img.width  / 2 +'px';
-        img.style.bottom  = position[1] - img.height / 2 +'px';
+    for (var j=0; j < optionLength; j++) {
+        var parentOffset = $('.optionContainer').offset();
+        var $option = option.eq(j);
+        var optionRad = 300;
 
-        img.style.transform = 'rotate(' + -rotation + 'rad)';
+        var optionTop = parentOffset.top/2 - optionRad * Math.sin(j*2*Math.PI/optionLength) + 100;
+        var optionLeft = parentOffset.left/2 - (optionRad+200) * Math.cos(j*2*Math.PI/optionLength) - $option.outerWidth()/2 + 200;
+        console.log(parentOffset.top, parentOffset.left);
+        $option.css({top: optionTop,left:optionLeft});
+    }
 
-        img.style.webkitTransform = img.style.MozTransform = img.style.msTransform =
-            img.style.OTransform = img.style.transform;
+    // set mouse x and y props and looper ticker
+    window.addEventListener( "mousemove", onMouseMove, false );
+    ticker = setInterval( looper, 1000/60 );
+    window.addEventListener("click", function() {
+        looper();
+    });
+}
 
-    };
+function animateIn( $item, $block ) {
+    var $nrX = 360 * getRandomInt(2);
+    var $nrY = 360 * getRandomInt(2);
 
-};
+    var $nx = -(2000) + getRandomInt( 4000 );
+    var $ny = -(2000) + getRandomInt( 4000 );
+    var $nz = -4000 +  getRandomInt( 4000 );
 
-cats[0] = new Cat();
+    var $s = 1.5 + (getRandomInt( 10 ) * .1);
+    var $d = 1 - (getRandomInt( 8 ) * .1);
 
-// This allows us to move the cat even whilst in an iFrame.
-Leap.loopController.setBackground(true)
+    TweenMax.set( $item, { autoAlpha:1, delay:$d } );
+    TweenMax.set( $block, { z:$nz, rotationY:$nrY, rotationX:$nrX, x:$nx, y:$ny, autoAlpha:0} );
+    TweenMax.to( $block, $s, { delay:$d, rotationY:0, rotationX:0, z:0,  ease:Expo.easeInOut} );
+    TweenMax.to( $block, $s-.5, { delay:$d, x:0, y:0, autoAlpha:1, ease:Expo.easeInOut} );
+}
+
+function onMouseMove(event) {
+    //mouseX = -(-(window.innerWidth * .5) + event.pageX) * .0025;
+    //mouseY = -(-(window.innerHeight * .5) + event.pageY ) * .01;
+    //mouseZ = -(radius) - (Math.abs(-(window.innerHeight * .5) + event.pageY ) - 200);
+}
+
+// loops and sets the carousel 3d properties
+function looper() {
+    addX += mouseX;
+    TweenMax.to( carousel, 1, { rotationY:addX, rotationX:mouseY, ease:Quint.easeOut } );
+    //TweenMax.set( carousel, {z:mouseZ } );
+    //output.innerHTML = addX +'-'+ radius;
+}
+
+function getRandomInt( $n ) {
+    return Math.floor((Math.random()*$n)+1);
+}
+
+function nextSlide() {
+//        var $active = $('.carouselItem.active');
+//        var $next = $('.carouselItem.active').next();
+//
+//        $active.removeClass('active');
+//        $next.addClass('active');
+}
+
+function activeSlide() {
+    var angleDiff = (addX % 360).toFixed(2);
+    //var circleTimes = parseInt(angleDiff / 360);
+    var slideIndex = -Math.floor(angleDiff / angle);
+    addX = Math.floor(addX/angle + 0.5)*angle;
+    output.innerHTML = slideIndex;
+
+    if(item.eq(slideIndex).hasClass('active') == false) {
+        item.removeClass('active');
+        item.eq(slideIndex).addClass('active');
+    }
+
+    //console.log(angleDiff + '-' + slidePos);
+}
+
+function onSwipeH(vel) {
+    mouseX = vel * .003;
+    //output.innerHTML = vel;
+}
+function onSwipeV(pos) {
+    mouseY = (10 - pos*0.05);
+}
+
+function onZoom(pos) {
+    if(pos > 5 && pos < 100) {
+        mouseZ =  -(1000 + pos*0.5);
+    } else {
+        mouseZ = -1020;
+    }
+}
+function onStop(){
+    mouseX = 0;
+    mouseY = 0;
+    activeSlide();
+}
+
+function collision(){
+    var $clone = $('.clone-item');
+    var cLeft = $clone.offset().left;
+    var cTop = $clone.offset().top;
+    var cWidth = $clone.width();
+    var cHeight = $clone.height();
+    option.each(function(){
+        var oLeft = $(this).offset().left;
+        var oTop = $(this).offset().top;
+        if(oLeft + $(this).width() > cLeft + 30 && oLeft < cLeft + cWidth
+            && oTop + $(this).height() > cTop + 10 && oTop < cTop + cHeight) {
+            option.removeClass('selected');
+            $(this).addClass('selected');
+        } else {
+            $(this).removeClass('selected');
+        }
+    });
+}
+
+function dropItem() {
+    var selectedOpt = $('.option.selected');
+
+    if( selectedOpt.length != 0) {
+        $('.active').addClass('done').removeClass('active');
+        selectedOpt.removeClass('selected');
+        setTimeout(function(){ addX += -angle;}, 300);
+
+    }
+}
+
+
+/********************************************************
+ * This is the actual example part where we call grabStrength
+ *****************************************************/
+var output = document.getElementById('output'),
+    progress = document.getElementById('progress');
+
+var slide;
+var isGrab = false;
+
+var controller = new Leap.Controller({
+    enableGestures: true,
+    frameEventName: 'animationFrame'
+}).use('screenPosition', {scale: 1});
+
+var screenWidth = window.innerWidth;
+var screenHeight = window.innerHeight;
+controller.setBackground(true);
+
+controller.on('frame', function(frame) {
+    if(frame.hands.length > 0) {
+        var hand = frame.hands[0];
+        //output.innerHTML = hand.grabStrength.toPrecision(2);
+        //progress.style.width = hand.grabStrength * 100 + '%';
+        //var handStatus = handStateFromHistory(hand, 10);
+        var handMesh = frame.hands[0].data('riggedHand.mesh');
+        var screenPosition = handMesh.screenPosition(
+            hand.stabilizedPalmPosition
+        );
+
+        //var stabilized = hand.stabilizedPalmPosition;
+        //output.innerHTML = hand.palmVelocity[0].toFixed(2) + ' | ' + hand.palmVelocity[1].toFixed(2);
+        //output.innerHTML = screenPosition.x.toFixed(2) + ' | ' + screenPosition.y.toFixed(2);
+        //var screenPosition = hand.screenPosition();
+
+        //cursor.style.left = screenPosition[0];
+        //cursor.style.top = screenPosition[1] + screenHeight*2;
+        //output.innerHTML = screenPosition[0].toFixed(2) + ' | ' + screenPosition[1].toFixed(2);
+        //output.innerHTML = hand.palmPosition[0].toFixed(2) + ' - ' + hand.palmPosition[1].toFixed(2) + ' - ' +hand.palmPosition[2].toFixed(2);
+        swipeItem(hand);
+        onSwipeV(hand.palmPosition[1].toFixed(2));
+        //onZoom(hand.palmPosition[2].toFixed(2));
+        if(grabItem(hand)) {
+            slide = $('.active');
+            //.innerHTML = slide.position().left + '-' + slide.position().top;
+            if(!isGrab){
+                //console.log(slide);
+                $('body').append('<div class="clone-item"></div>');
+                $('.clone-item').animate({
+                    opacity: 1
+                }, 500);
+                $('.optionContainer').css({opacity: 1, zIndex: 100});
+                isGrab = true;
+            } else {
+                var posLeft = screenPosition.x;
+                var posTop = window.innerHeight - (screenPosition.y + 100);
+                $('.clone-item').css({left: posLeft, top:posTop});
+                collision();
+            }
+        }
+    }
+
+});
+
+controller.connect();
+//    controller.use('playback', {
+//        // This is a compressed JSON file of preprecorded frame data
+//        recording: 'grab-bones-7-54fps.json.lz',
+//        // How long, in ms, between repeating the recording.
+//        timeBetweenLoops: 1000,
+//        pauseOnHand: true
+//    }).on('riggedHand.meshAdded', function(handMesh, leapHand){
+//        handMesh.material.opacity = 0.7;
+//    });
+
+
+controller.use('riggedHand', {
+    scale: 1,
+    positionScale: 4,
+    offset: new THREE.Vector3(0,-10,-5),
+    boneColors: function (boneMesh, leapHand){
+        if ((boneMesh.name.indexOf('Finger_') == 0) ) {
+            return {
+                hue: 0.3,
+                saturation: leapHand.grabStrength,
+                lightness: 0.5
+            }
+        }
+    }
+});
+
+
+function grabItem(hand) {
+    if(hand.grabStrength > 0.7) {
+        return true; // grabbing
+    }
+    else {
+        isGrab = false;
+        $('.clone-item').remove();
+        dropItem();
+        $('.optionContainer').css({opacity: 0, zIndex: -1});
+        return false; // opening
+    }
+}
+
+function selectItem(hand) {
+    if( (hand.palmPosition[0]) ) {
+    }
+}
+
+function swipeItem(hand) {
+    if(!isGrab) {
+        if(hand.palmVelocity[0] > 600 || hand.palmVelocity[0] < -600) {
+            //output.innerHTML = 'Swipe horizon';
+            onSwipeH(hand.palmVelocity[0]);
+        } else if (hand.palmVelocity[0] < 40 && hand.palmVelocity[0] > -40) {
+            //output.innerHTML = 'stop';
+            onStop();
+        }
+    }
+}
