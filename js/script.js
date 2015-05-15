@@ -158,17 +158,26 @@ function collision(){
     });
 }
 
+function submit(screenPosition){
+    var posLeft = screenPosition.x - 100;
+    var posTop = window.innerHeight - (screenPosition.y + 100);
+    output.innerHTML = posLeft + ' ' + posTop;
+}
+
 function dropItem() {
     var selectedOpt = $('.option.selected');
-    var questionId = $('.active').data('id');
-    var answerId = selectedOpt.data('id');
     //results[questionId] = answerId;
     //console.log(results);
 
     if( selectedOpt.length != 0) {
+        var questionId = $('.active').data('id');
+        var answerId = selectedOpt.data('id');
+        results[questionId] = answerId;
+        console.log(results);
         $('.active').addClass('done').removeClass('active');
         selectedOpt.removeClass('selected');
         setTimeout(function(){ addX += -angle;}, 300);
+        isDropped = true;
     }
 }
 
@@ -180,8 +189,13 @@ function dropItem() {
 var output = document.getElementById('output'),
     progress = document.getElementById('progress');
 
+var $submitBtn = $('.submit_btn');
+var submitBtnLeft = $submitBtn.offset().left;
+var submitBtntop = $submitBtn.offset().top;
+console.log(submitBtnLeft, submitBtntop);
 var slide;
 var isGrab = false;
+var isDropped = true;
 
 var controller = new Leap.Controller({
     enableGestures: true,
@@ -232,6 +246,7 @@ controller.on('frame', function(frame) {
                 collision();
             }
         }
+        submit(screenPosition);
     }
 
 });
@@ -265,15 +280,17 @@ controller.use('riggedHand', {
 
 
 function grabItem(hand) {
-    if(hand.grabStrength > 0.7) {
+    if(hand.grabStrength > 0.9) {
+        isDropped = false;
         return true; // grabbing
     }
     else {
         isGrab = false;
-
         $('.clone-item').remove();
-        dropItem();
-        $('.optionContainer').css({opacity: 0, zIndex: -1});
+        if(!isDropped){
+            dropItem();
+            $('.optionContainer').css({opacity: 0, zIndex: -1});
+        }
         return false; // opening
     }
 }

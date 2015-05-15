@@ -56,6 +56,9 @@
     </div>
 </div>
 
+<div class="btn-corner submit_btn"></div>
+<div class="btn-corner reset_btn"></div>
+
 
 
 <div id="output"></div>

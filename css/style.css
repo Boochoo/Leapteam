@@ -174,7 +174,7 @@ a:hover
 
 #output {
     font-size: 66px;
-    color: #005d98;
+    color: #fff;
     text-align: left;
     position: fixed;
     bottom: 18px;
@@ -234,3 +234,18 @@ a:hover
     color: #1A5E10;
 }
 
+.btn-corner {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    bottom: -200px;
+    background-color: #fff;
+    border-radius: 200px;
+}
+.submit_btn {
+    right: -200px;
+}
+
+.reset_btn {
+    left: -200px;
+}
