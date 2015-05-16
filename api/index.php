@@ -65,7 +65,7 @@ class MyClass
 	 echo "404 - page not found";
   }
   function getTheAnswer($qId){
-    $singleRow = getDatabase()->all('SELECT * FROM answers WHERE aNumber=:id', array(':id' => $qId));
+    $singleRow = getDatabase()->all('SELECT * FROM answers WHERE qNumber=:id', array(':id' => $qId));
 	   header('Content-Type: application/json');
 	   echo json_encode($singleRow);	
   }
@@ -85,7 +85,7 @@ class MyClass
             $newAn3= $data["answer3"];
           }
           if(array_key_exists('answer4', $data)){
-            $newAn3= $data["answer4"];
+            $newAn4= $data["answer4"];
           }
           
 
@@ -104,13 +104,13 @@ class MyClass
             INSERT INTO questions(qNumber, qContent) VALUES(:qNumber, :qContent)', 
             array(':qNumber' => $qNumber, ':qContent' => $newQst));
 
-          self::addAnswerToSql($qNumber,$newAn1);
-          self::addAnswerToSql($qNumber,$newAn2);
+          self::addAnswerToSql($qNumber,1,$newAn1);
+          self::addAnswerToSql($qNumber,2,$newAn2);
           if(array_key_exists('answer3', $data)){
-            self::addAnswerToSql($qNumber,$newAn3);
+            self::addAnswerToSql($qNumber,3,$newAn3);
           }
           if(array_key_exists('answer4', $data)){
-            self::addAnswerToSql($qNumber,$newAn4);
+            self::addAnswerToSql($qNumber,4,$newAn4);
           }
           
           http_response_code(201);
@@ -119,11 +119,11 @@ class MyClass
           echo json_encode($errors);
        }
   }
-  function addAnswerToSql($aNumber,$aContent){
+  function addAnswerToSql($qNumber,$aNumber,$aContent){
       if($aContent!= "" || $aContent!= null){
           $addAnswer = getDatabase()->execute('
-            INSERT INTO answers(aNumber, aContent) VALUES(:aNumber, :aContent)', 
-            array(':aNumber' => $aNumber, ':aContent' => $aContent));
+            INSERT INTO answers(qNumber, aNumber, aContent) VALUES(:qNumber, :aNumber, :aContent)',
+            array(':qNumber' => $qNumber,':aNumber' => $aNumber, ':aContent' => $aContent));
       }
   }
 
