@@ -44,13 +44,16 @@ function generateElement(){
 
     for ( var i = 0; i < itemLength; i++ ) {
         var $item = item.eq(i);
+        if(i==0)
+            $item.addClass('active');
+
         var $block = $item.find('.carouselItemInner');
         //thanks @chrisgannon!
         TweenMax.set($item, {rotationY:angle * i, z:radius, transformOrigin:"50% 50% " + -radius + "px"});
 
         animateIn( $item, $block );
     }
-
+    getAnswer();
     //positioning answers
 
     for (var j=0; j < optionLength; j++) {
@@ -120,6 +123,7 @@ function activeSlide() {
     if(item.eq(slideIndex).hasClass('active') == false) {
         item.removeClass('active');
         item.eq(slideIndex).addClass('active');
+        getAnswer();
     }
 
     //console.log(angleDiff + '-' + slidePos);
@@ -158,26 +162,49 @@ function collision(){
     });
 }
 
-    
+function getAnswer(){
+    var qId= $('.active').data('id');
+    $.get('/leapteam/api/answer/'+qId, function(results){
+        if(results){
+            for(var i=0 in results){
+                $('.option:eq('+i+')').html(results[i].aContent);
+            }
+        }
+    });
+}
 
 function checkSubmit(screenPosition){
-    var handPosLeft = screenPosition.x - 100;
-    var handPosTop = window.innerHeight - (screenPosition.y + 100);
+    var handPosLeft = screenPosition.x - 150;
+    var handPosTop = window.innerHeight - screenPosition.y - 150;
 
-    if(handPosLeft > submitBtnLeft - 100 
+    if(handPosLeft > submitBtnLeft - 100
         && handPosLeft < submitBtnLeft + 100
-        && handPosTop > submitBtntop - 100 
+        && handPosTop > submitBtntop - 100
         && handPosTop < submitBtntop + 100 ) 
     {
         progress.innerHTML = countHoldingTime;
         countHoldingTime++;
-        if(countHoldingTime > 100)
+        if(countHoldingTime > 100 && $('.submit_btn').hasClass('submitted') == false) {
             progress.innerHTML = 'Submited';
+            console.log(results);
+            $('.submit_btn').addClass('submitted');
+            var data= { results : results };
+
+            $.ajax({
+                url: '/leapteam/api/save',
+                data: JSON.stringify(data),
+                type: 'post',
+                dataType: 'json',
+                success: function (res) {
+                    console.log(res);
+                }
+            });
+        }
     } else {
         progress.innerHTML = '';
         countHoldingTime = 0;
     }
-    output.innerHTML = handPosLeft + ' ' + handPosTop;
+    //output.innerHTML = handPosLeft + ' ' + handPosTop;
 }
 
 function dropItem() {
