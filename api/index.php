@@ -10,7 +10,7 @@ include_once 'src/Epi.php';
 Epi::setSetting('exceptions', false);
 Epi::setPath('base', 'src');
 Epi::init('route','database');
-EpiDatabase::employ('mysql','leapmotion','localhost','YOUR_MYSQL_ACCOUNT','YOUR_MYSQL_PASSWORD'); 
+EpiDatabase::employ('mysql','leap','localhost','root',''); 
 
 // ***  Get questions and answers
 getRoute()->get('/', array('MyClass', 'welcome'));
