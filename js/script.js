@@ -158,10 +158,26 @@ function collision(){
     });
 }
 
-function submit(screenPosition){
-    var posLeft = screenPosition.x - 100;
-    var posTop = window.innerHeight - (screenPosition.y + 100);
-    output.innerHTML = posLeft + ' ' + posTop;
+    
+
+function checkSubmit(screenPosition){
+    var handPosLeft = screenPosition.x - 100;
+    var handPosTop = window.innerHeight - (screenPosition.y + 100);
+
+    if(handPosLeft > submitBtnLeft - 100 
+        && handPosLeft < submitBtnLeft + 100
+        && handPosTop > submitBtntop - 100 
+        && handPosTop < submitBtntop + 100 ) 
+    {
+        progress.innerHTML = countHoldingTime;
+        countHoldingTime++;
+        if(countHoldingTime > 100)
+            progress.innerHTML = 'Submited';
+    } else {
+        progress.innerHTML = '';
+        countHoldingTime = 0;
+    }
+    output.innerHTML = handPosLeft + ' ' + handPosTop;
 }
 
 function dropItem() {
@@ -196,7 +212,7 @@ console.log(submitBtnLeft, submitBtntop);
 var slide;
 var isGrab = false;
 var isDropped = true;
-
+var countHoldingTime = 0;
 var controller = new Leap.Controller({
     enableGestures: true,
     frameEventName: 'animationFrame'
@@ -246,7 +262,8 @@ controller.on('frame', function(frame) {
                 collision();
             }
         }
-        submit(screenPosition);
+
+        checkSubmit(screenPosition);
     }
 
 });
