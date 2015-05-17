@@ -1,56 +1,148 @@
-<html lang="en">
+<html>
 <head>
-    <meta charset="utf-8" />
-    <!-- disable zooming -->
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=0" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="js/lib.js"></script>
 
-    <title>Leap Motion Example</title>
-    <link rel="stylesheet prefetch" href="css/style.css">
+    <title>Leap Motion Guide Page</title>
+    <style>
+        html { height: 100%; }
+        body{
+            background-color:grey;
+            min-height: 100%;
+            margin:0px;
+            padding:0px;
+        }
+        #handMover{
 
-    <script src="js/three.js"></script>
-    <script src="js/leap.min.js"></script>
-    <script src="js/leap-plugin.js"></script>
-    <script src="js/leap.rigged-hand.js"></script>
+            padding: 20px; margin-bottom:20px; position:relative; margin-bottom:20px;
+            -moz-border-radius-topright: 10px; -webkit-border-top-right-radius: 10px;
 
+        }
+
+        a.mover{
+            background: #900;
+            padding: 6px 12px;
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+
+        }
+
+        #next_tab{
+            position: absolute;
+            top: 300px;
+            cursor: pointer;
+            right: 45px;
+            -moz-border-radius-topright: 10px;
+            -webkit-border-top-right-radius: 10px;
+        }
+
+        #prev_tab{
+            position: absolute;
+            top: 300px;
+            cursor: pointer;
+            left: 45px;
+
+            -moz-border-radius-topright: 10px;
+            -webkit-border-top-right-radius: 10px;
+        }
+
+        h1{
+            position:relative;
+            text-align:center;
+            color:green;
+            padding-top:32px;
+            font-family:"Lucida Console", Monaco, monospace;
+            font:26px;
+        }
+        video{
+            position:relative;
+            margin-left:300px;
+        }
+        #hand_guide{
+            margin-left:300px;
+        }
+
+        #pageOne{
+            background-image: url("images/bg.PNG");
+
+        }
+
+
+
+
+    </style>
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+
+            function handLeft() {
+                $("#handMover").animate({left: "-=950"}, 2000, "swing", handRight);
+            }
+            function handRight() {
+                $("#handMover").animate({left: "+=950"}, 2000, "swing", handLeft);
+            }
+
+            handRight();
+
+            setTimeout(function(){
+                location.href = '/leapteam/#pagetwo'
+            }, 4000);
+
+            setTimeout(function(){
+                location.href = '/leapteam/survey.php';
+            }, 16000);
+        });
+    </script>
 </head>
+
 <body>
 
-<div id="contentContainer" class="trans3d">
-    <section id="carouselContainer" class="trans3d">
-    <?php
-    $questions = json_decode(file_get_contents('http://localhost/leapteam/api/questions'));
-    //var_dump($questions);
-    if($questions) {
-        foreach($questions as $key => $val) {
-            $question = '<figure id="item'.($key+1) .'" class="carouselItem trans3d" data-id="'.$val->qNumber.'">'.
-            '<div class="carouselItemInner trans3d">'.
-                $val->qContent.
-            '</div>'.
-            '</figure>';
-            echo $question;
-        }
-    }
-    ?>
-    </section>
 
-    <div class="optionContainer">
-        <div id="option_1" class="option" data-id="1"></div>
-        <div id="option_2" class="option" data-id="2"></div>
-        <div id="option_3" class="option" data-id="3"></div>
-        <div id="option_4" class="option" data-id="4"></div>
+
+
+<!--<a href="#" class="next_tab mover">Next Guide Point =></a>
+<a href="#" class="prev_tab mover"><= Previous Guide Point</a>-->
+
+
+
+<div data-role="page" id="pageone">
+    <div data-role="header">
+        <h1>Move your hands from side to side <br/>
+            to select questions! </h1>
     </div>
+
+    <div id="handMover" data-role="main" class="ui-content" >
+
+        <img src="images/handWeb.gif" height="500px" alt="hand of your magesty ">
+    </div>
+<!--    <div id="next_tab" data-role="footer">-->
+<!--        <a href="#pagetwo" data-transition="slide">Drag and Drop Page</a>-->
+<!--    </div>-->
+<!--    <div id="prev_tab" data-role="footer">-->
+<!--        <a href="#pageone" data-transition="slide" data-direction="reverse">A Hand Guide</a>-->
+<!--    </div>-->
+
 </div>
 
-<div class="btn-corner submit_btn"></div>
-<div class="btn-corner reset_btn"></div>
+<div data-role="page" id="pagetwo">
+    <div data-role="header">
+        <h1>Grab and Drop Questions </h1>
+    </div>
+
+    <div id="hand_guide" data-role="main" class="ui-content">
+        <!--video width="600" height="600"  controls autoplay>
+        <source src="hand_guide_2.mp4" type="video/mp4">
+        <source src="hand_guide_2.ogg" type="video/ogg">
+        Your browser does not support the video tag.
+      </video-->
+        <img src="images/hand_guide3.gif" alt="hand of your magesty ">
+    </div>
+
+</div>
 
 
-
-<div id="output"></div>
-<div id="progress"></div>
-
-
-<script src="js/lib.js"></script>
-<script type="text/javascript" src="js/script.js"></script>
 </body>
 </html>

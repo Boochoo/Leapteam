@@ -87,6 +87,8 @@ h3{
     margin-left:35px;
 }
 
+canvas {z-index: 100;}
+
 #fps
 {
     margin-top:5px;
@@ -160,9 +162,7 @@ a:hover
     width: 500px;
     height: 300px;
     position: absolute;
-    background-color: rgba(255, 255, 255, .75);
     border: 10px solid rgba(255, 255, 255, .5);
-    color: aqua;
     font-size: 55px;
     left: 50%;
     /* top: 50%; */
@@ -170,6 +170,16 @@ a:hover
     /* margin-top: -100px; */
     text-align: center;
     /* padding-top: 50px; */
+    background-color: rgba(21, 38, 82, 0.48);
+    box-shadow: 0 0 15px 1px #FFF;
+    transition: all 1s;
+    color: #F7DCFC;
+    display: table;
+}
+
+.carouselItemInner span{
+    display: table-cell;
+    vertical-align: middle;
 }
 
 #output {
@@ -181,10 +191,10 @@ a:hover
 }
 
 .active .carouselItemInner{
-    background-color: rgba(87, 250, 250, 0.48);
-    box-shadow: 0 0 15px 1px #5EF9FF;
+    background-color: rgba(250, 234, 246, 0.7);
+    box-shadow: 0 0 30px 1px #A2E4E7;
     transition: all 1s;
-    color: #CEE4E4;
+    color: #472C3F;
 }
 .clone-item{
     position: absolute;
@@ -195,43 +205,76 @@ a:hover
     top: 20%;
     margin-left: -250px;
     text-align: center;
-    background-color: rgba(87, 250, 250, 0.48);
-    border: 10px solid rgba(255, 255, 255, .5);
-    box-shadow: 0 0 15px 1px #5EF9FF;
+    background-color: rgba(32, 207, 179, 0.48);
+    border: 10px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px 1px #F8EFFF;
 }
 .optionContainer {
-    /*position: relative;*/
-    width: 0;
-    height: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
     margin: 0 auto;
-    margin-top: 80%;
     opacity: 0;
     z-index: -1;
 }
 
 .option {
     position: absolute;
-    width: 20%;
+    width: 200px;
     height: 150px;
     border-radius: 50px;
-    background-color: rgba(250, 205, 87, 0.8);
-    color: #4F4645;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 10px 1px #FFFDFF;
+    color: #34373F;
     overflow: hidden;
     word-wrap: break-word;
     font-weight: bold;
     font-size: 20px;
     text-align: center;
+    display: table;
+}
+
+.option span{
+    display: table-cell;
     vertical-align: middle;
-    line-height: 150px;
+}
+
+#option_1 {
+    left: 5%;
+    top: 35%;
+}
+
+#option_2 {
+    right: 5%;
+    top: 35%;
+}
+
+#option_3 {
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    top: 20px;
+}
+
+#option_4 {
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    bottom: 20px;
 }
 
 .selected {
-    background-color: aqua;
+    background-color: rgba(145, 242, 67, 0.8);
 }
 
 .done .carouselItemInner{
     background-color: rgba(144, 245, 43, 0.7);
-    color: #1A5E10;
+    color: #162814;
+}
+
+.btn-corner.highlight {
+    background-color: rgba(140, 255, 163, 0.7);
+    box-shadow: 0 0 10px #FFF;
 }
 
 .btn-corner {
@@ -239,13 +282,61 @@ a:hover
     width: 400px;
     height: 400px;
     bottom: -200px;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.4);
     border-radius: 200px;
 }
 .submit_btn {
     right: -200px;
 }
 
+.submit_btn span{
+    position: absolute;
+    top: 100px;
+    left: 50px;
+    color: #FFF;
+    font-size: 40px;
+}
+
 .reset_btn {
     left: -200px;
+}
+
+.reset_btn span{
+    position: absolute;
+    top: 100px;
+    right: 60px;
+    font-size: 40px;
+}
+
+.thank_dialog{
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    position: fixed;
+    text-align: center;
+    vertical-align: middle;
+    display: none;
+    opacity: 0;
+}
+.thank_dialog h1{
+    position: absolute;
+    top: 30%;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+}
+
+.new_survey_btn {
+    width: 60%;
+    height: 30%;
+    background-color: #00B7FF;
+    position: absolute;
+    top: 40%;
+    margin: 0 auto;
+    left: 0;
+    right: 0;
+    font-size: 50px;
+    line-height: 200px;
+    border-radius: 30px;
 }

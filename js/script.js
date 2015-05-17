@@ -56,16 +56,16 @@ function generateElement(){
     getAnswer();
     //positioning answers
 
-    for (var j=0; j < optionLength; j++) {
-        var parentOffset = $('.optionContainer').offset();
-        var $option = option.eq(j);
-        var optionRad = 300;
-
-        var optionTop = parentOffset.top/2 - optionRad * Math.sin(j*2*Math.PI/optionLength) + 50; // 100
-        var optionLeft = parentOffset.left/2 - (optionRad+200) * Math.cos(j*2*Math.PI/optionLength) - $option.outerWidth()/2 + 100; // 200
-        console.log(parentOffset.top, parentOffset.left);
-        $option.css({top: optionTop,left:optionLeft});
-    }
+    //for (var j=0; j < optionLength; j++) {
+    //    var parentOffset = $('.optionContainer').offset();
+    //    var $option = option.eq(j);
+    //    var optionRad = 300;
+    //
+    //    var optionTop = parentOffset.top/2 - optionRad * Math.sin(j*2*Math.PI/optionLength) + 50; // 100
+    //    var optionLeft = parentOffset.left/2 - (optionRad+200) * Math.cos(j*2*Math.PI/optionLength) - $option.outerWidth()/2 + 100; // 200
+    //    console.log(parentOffset.top, parentOffset.left);
+    //    $option.css({top: optionTop,left:optionLeft});
+    //}
 }
 
 
@@ -118,7 +118,7 @@ function activeSlide() {
     //var circleTimes = parseInt(angleDiff / 360);
     var slideIndex = -Math.floor(angleDiff / angle);
     addX = Math.floor(addX/angle + 0.5)*angle;
-    output.innerHTML = slideIndex;
+    //output.innerHTML = slideIndex;
 
     if(item.eq(slideIndex).hasClass('active') == false) {
         item.removeClass('active');
@@ -164,16 +164,17 @@ function collision(){
 
 function getAnswer(){
     var qId= $('.active').data('id');
+    $('.option').html('');
     $.get('/leapteam/api/answer/'+qId, function(results){
         if(results){
             for(var i=0 in results){
-                $('.option:eq('+i+')').html(results[i].aContent);
+                $('.option:eq('+i+')').html('<span>'+results[i].aContent+'</span>');
             }
         }
     });
 }
 
-function checkSubmit(screenPosition){
+function checkButton(screenPosition){
     var handPosLeft = screenPosition.x - 150;
     var handPosTop = window.innerHeight - screenPosition.y - 150;
 
@@ -182,27 +183,65 @@ function checkSubmit(screenPosition){
         && handPosTop > submitBtntop - 100
         && handPosTop < submitBtntop + 100 ) 
     {
-        progress.innerHTML = countHoldingTime;
-        countHoldingTime++;
-        if(countHoldingTime > 100 && $('.submit_btn').hasClass('submitted') == false) {
-            progress.innerHTML = 'Submited';
-            console.log(results);
-            $('.submit_btn').addClass('submitted');
-            var data= { results : results };
 
-            $.ajax({
-                url: '/leapteam/api/save',
-                data: JSON.stringify(data),
-                type: 'post',
-                dataType: 'json',
-                success: function (res) {
-                    console.log(res);
-                }
-            });
+        if($('.submit_btn').hasClass('submitted') == false){
+            countHoldingTime++;
+            $('.submit_btn').html('<span>'+countHoldingTime+'%</span>');
+
+            if(!$('.submit_btn').hasClass('highlight'))
+                $('.submit_btn').addClass('highlight');
+            if(countHoldingTime > 100 ) {
+                progress.innerHTML = 'Submited';
+                //console.log(results);
+                $('.submit_btn').addClass('submitted');
+                var data= { results : results };
+
+                $.ajax({
+                    url: '/leapteam/api/save',
+                    data: JSON.stringify(data),
+                    type: 'post',
+                    dataType: 'json',
+                    success: function (res) {
+                    }
+                });
+                $('.thank_dialog').show().animate({opacity: 1},1000);
+                countHoldingTime = 0;
+                $('.submit_btn').html('<span>Submitted</span>');
+            }
         }
+
+    } else if(handPosLeft > resetBtnLeft
+        && handPosLeft < resetBtnLeft + 250
+        && handPosTop > resetBtnTop - 100
+        && handPosTop < resetBtnTop + 100)
+    {
+        if(!$('.reset_btn').hasClass('highlight'))
+            $('.reset_btn').addClass('highlight');
+        countHoldingTime++;
+        $('.reset_btn').html('<span>'+countHoldingTime+'%</span>');
+        if(countHoldingTime > 100)
+            location.reload();
+    } else if($('.submit_btn').hasClass('submitted')
+        && handPosLeft < window.innerWidth / 2 + 400
+        && handPosLeft > window.innerWidth / 2 - 400)
+    {
+        countHoldingTime++;
+        if(countHoldingTime > 100)
+            location.href = '/leapteam';
+
     } else {
-        progress.innerHTML = '';
         countHoldingTime = 0;
+        if($('.submit_btn').hasClass('highlight')) {
+            $('.submit_btn').removeClass('highlight');
+            $('.submit_btn').html('<span>Submit</span>');
+        }
+
+
+        if($('.reset_btn').hasClass('highlight')) {
+            $('.reset_btn').removeClass('highlight');
+            $('.reset_btn').html('<span>Reset</span>');
+        }
+
     }
     //output.innerHTML = handPosLeft + ' ' + handPosTop;
 }
@@ -233,9 +272,14 @@ var output = document.getElementById('output'),
     progress = document.getElementById('progress');
 
 var $submitBtn = $('.submit_btn');
+var $resetBtn = $('.reset_btn');
 var submitBtnLeft = $submitBtn.offset().left;
 var submitBtntop = $submitBtn.offset().top;
-console.log(submitBtnLeft, submitBtntop);
+var resetBtnLeft = $resetBtn.offset().left;
+var resetBtnTop = $resetBtn.offset().top;
+
+
+
 var slide;
 var isGrab = false;
 var isDropped = true;
@@ -290,7 +334,7 @@ controller.on('frame', function(frame) {
             }
         }
 
-        checkSubmit(screenPosition);
+        checkButton(screenPosition);
     }
 
 });

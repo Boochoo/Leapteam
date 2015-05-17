@@ -6,7 +6,7 @@ qContent:  text
 
 table Answers
 aId: int, primary key, auto increment
-qId: question id foreign key
+qNumber: question id foreign key
 aNumber: int
 aContent: text
 
