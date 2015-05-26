@@ -1,4 +1,15 @@
+
+
+
 # Leapmotion project
+Link Demo:
+http://ruathudo.com/leap/
+
+You can use with your own leapmotion directly!
+
+
+
+
 Backend by Truc Truong
 ##1. Installation:
  - Create a new database name **leapmotion**
